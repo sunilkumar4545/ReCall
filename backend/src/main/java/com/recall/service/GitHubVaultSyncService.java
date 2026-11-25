@@ -43,7 +43,9 @@ public class GitHubVaultSyncService {
     @Value("${github.base-path:frontend/src/content/notes}")
     private String basePath;
 
-    private final RestClient restClient = RestClient.builder().build();
+    private final RestClient restClient = RestClient.builder()
+            .defaultHeader(HttpHeaders.USER_AGENT, "ReCall-AI-Sync/1.0")
+            .build();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public boolean isEnabled() {
