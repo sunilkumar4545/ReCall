@@ -1,0 +1,141 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 
+ * Koval SEO Design System with Seamless Dark Mode:
+ * - Light Mode: Pure White Paper (#ffffff) with fine dot matrix
+ * - Dark Mode: Deep Obsidian Black (#0a0a0c) with glowing inverted dot matrix
+ */
+:root {
+  --ground: #ffffff;
+  --ink: #111110;
+  --body: #3a3a38;
+  --quiet: #656561;
+  --hairline: rgba(17, 17, 16, 0.15);
+  --border: rgba(17, 17, 16, 0.35);
+  --light: #f4f4f2;
+  --dot-color: rgba(17, 17, 16, 0.16);
+}
+
+html.dark {
+  --ground: #0a0a0c;
+  --ink: #ffffff;
+  --body: #d4d4d8;
+  --quiet: #a1a1aa;
+  --hairline: rgba(255, 255, 255, 0.15);
+  --border: rgba(255, 255, 255, 0.35);
+  --light: #16161a;
+  --dot-color: rgba(255, 255, 255, 0.16);
+}
+
+html, body {
+  background-color: var(--ground);
+  color: var(--ink);
+  font-family: 'Instrument Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+  /* 16px technical dot-matrix raster */
+  background-image: radial-gradient(var(--dot-color) 1px, transparent 1px);
+  background-size: 16px 16px;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Minimal theme-adaptive scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--ground);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--ink);
+}
+
+/* Koval SEO Micro-Pill Tag Styles */
+.tech-pill {
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  padding: 5px 9px;
+  border: 1px solid var(--border);
+  background-color: var(--ground);
+  color: var(--ink);
+  display: inline-flex;
+  align-items: center;
+  transition: all 0.12s ease;
+}
+
+.tech-pill:hover {
+  background-color: var(--ink);
+  color: var(--ground);
+  border-color: var(--ink);
+}
+
+.tech-pill-black {
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  padding: 5px 9px;
+  background-color: var(--ink);
+  color: var(--ground);
+  border: 1px solid var(--ink);
+  display: inline-flex;
+  align-items: center;
+}
+
+/* 
+ * Direct Theme Utility Classes
+ * Ensures immediate, 100% reliable light/dark mode color transitions
+ */
+.bg-ground {
+  background-color: var(--ground) !important;
+}
+
+.bg-ink {
+  background-color: var(--ink) !important;
+}
+
+.text-ground {
+  color: var(--ground) !important;
+}
+
+.text-ink {
+  color: var(--ink) !important;
+}
+
+.text-ink-body {
+  color: var(--body) !important;
+}
+
+.text-ink-quiet {
+  color: var(--quiet) !important;
+}
+
+.border-ink {
+  border-color: var(--ink) !important;
+}
+
+.border-ink-hairline {
+  border-color: var(--hairline) !important;
+}
+
+.bg-light {
+  background-color: var(--light) !important;
+}
+
+.shadow-brutalist {
+  box-shadow: 3px 3px 0px 0px var(--ink) !important;
+}
+
+.shadow-brutalist-sm {
+  box-shadow: 2px 2px 0px 0px var(--ink) !important;
+}
+
+.shadow-brutalist-hover:hover {
+  box-shadow: 4px 4px 0px 0px var(--ink) !important;
+}
+

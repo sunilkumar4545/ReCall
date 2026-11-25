@@ -1,0 +1,76 @@
+# ==============================================================================
+# ReCall AI – Production Git Ignore Configuration
+# ==============================================================================
+
+# Node / Frontend
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Java / Maven / Backend
+target/
+*.class
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+hs_err_pid*
+
+# Python / Telegram Listener
+__pycache__/
+*.py[cod]
+*$py.class
+*.session
+*.session-journal
+.pytest_cache/
+venv/
+.venv/
+env/
+
+# Local Storage / Uploads
+data/
+data/storage/
+*.log
+logs/
+
+# IDE & Editor Configuration
+.idea/
+*.iml
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.DS_Store
+Thumbs.db
+
+# Environment Variables & Secrets (STRICT - NEVER COMMIT SECRETS)
+.env
+.env.local
+.env.*.local
+.env.*
+*.env
+backend/.env
+frontend/.env
+telegram-listener/.env
+*.secret.*
+*.pem
+*.key
+*.p12
+
+# Whitelist safe documentation examples
+!.env.example
+!backend/.env.example
+!frontend/.env.example
+
+# Debug / Build Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
