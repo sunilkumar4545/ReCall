@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X, Send, Bot, Sparkles, BookOpen, RefreshCw, Terminal, Check, Copy, Cpu } from 'lucide-react';
+import { X, Send, Bot, BookOpen, RefreshCw, Terminal, Check, Copy, Cpu } from 'lucide-react';
 import { api } from '@/services/api';
 import { AiChatMessage, AiTokenStats } from '@/types';
 
@@ -8,13 +8,6 @@ interface AiTutorDrawerProps {
   onClose: () => void;
   activeCategory?: string;
 }
-
-const QUICK_PROMPTS = [
-  'Quiz me on my saved notes',
-  'Explain Sliding Window algorithm',
-  'System Design interview checklist',
-  'Whiteboard problem: Two Sum edge cases',
-];
 
 export const AiTutorDrawer: React.FC<AiTutorDrawerProps> = ({
   isOpen,
@@ -26,7 +19,7 @@ export const AiTutorDrawer: React.FC<AiTutorDrawerProps> = ({
       id: 'welcome',
       role: 'assistant',
       content:
-        "**Hello! I'm your ReCall AI Interview Tutor.**\n\nI can quiz you on your saved notes, explain coding concepts, walk through system design trade-offs, and help you prepare for technical interviews.\n\nAsk me anything or click one of the quick prompts below!",
+        "**Hello! I'm your ReCall AI Technical Mentor.**\n\nAsk me anything about your saved notes, algorithms, code debugging, or system design trade-offs.",
       modelUsed: 'gemini-3.5-flash / groq-120b',
       provider: 'Dual-Engine',
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -256,21 +249,6 @@ export const AiTutorDrawer: React.FC<AiTutorDrawerProps> = ({
               {tokenStats.totalQueries} Queries / 100% Free
             </span>
           </div>
-        </div>
-
-        {/* Quick Prompts Bar */}
-        <div className="px-3 py-2 border-b border-ink-hairline bg-light/30 overflow-x-auto flex items-center gap-1.5 no-scrollbar">
-          <Sparkles className="w-3 h-3 text-ink shrink-0 ml-1 mr-0.5" />
-          {QUICK_PROMPTS.map((prompt, idx) => (
-            <button
-              key={idx}
-              onClick={() => handleSend(prompt)}
-              disabled={loading}
-              className="tech-pill text-[10px] whitespace-nowrap hover:bg-ink hover:text-ground shrink-0 transition-colors"
-            >
-              {prompt}
-            </button>
-          ))}
         </div>
 
         {/* Chat Feed */}
