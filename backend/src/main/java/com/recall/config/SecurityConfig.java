@@ -63,7 +63,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/**").permitAll()
 
                 // Health check only (actuator metrics locked down)
-                .requestMatchers("/actuator/health", "/error").permitAll()
+                .requestMatchers("/actuator/health", "/health", "/error").permitAll()
 
                 // Any other actuator or internal requests require authentication
                 .anyRequest().authenticated()
