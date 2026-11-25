@@ -14,9 +14,11 @@ RUN mvn clean package -DskipTests
 # Stage 2: Minimal Distroless / Alpine JRE Runtime
 FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
-RUN addgroup -S recall && adduser -S recall -G recall
+RUN addgroup -S recall && adduser -S recall -G recall \
+    && mkdir -p /app/data /app/frontend/src/content/notes /tmp/recall-notes \
+    && chown -R recall:recall /app /tmp/recall-notes
+COPY --from=builder --chown=recall:recall /app/target/recall-backend-*.jar app.jar
 USER recall
-COPY --from=builder /app/target/recall-backend-*.jar app.jar
 EXPOSE 8080
 ENV JAVA_OPTS="-Xms256m -Xmx512m -XX:+UseG1GC"
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]

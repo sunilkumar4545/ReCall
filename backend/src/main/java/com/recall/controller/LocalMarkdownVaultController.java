@@ -79,7 +79,7 @@ public class LocalMarkdownVaultController {
      */
     private Path getNotesDirectory() {
         Path userDir = Paths.get("").toAbsolutePath();
-        // 1. If running from backend/
+        // 1. If running locally from backend/
         Path candidate1 = userDir.resolve("../frontend/src/content/notes").normalize();
         if (Files.exists(candidate1)) {
             return candidate1;
@@ -89,13 +89,19 @@ public class LocalMarkdownVaultController {
         if (Files.exists(candidate2)) {
             return candidate2;
         }
-        // 3. Fallback: try candidate1 and create directories
+        // 3. Fallback for Docker / Cloud runtime: data/notes or java.io.tmpdir
+        Path candidate3 = userDir.resolve("data/notes").normalize();
         try {
-            Files.createDirectories(candidate1);
-            return candidate1;
-        } catch (IOException e) {
-            log.warn("Could not create notes directory: {}", e.getMessage());
-            return candidate2;
+            Files.createDirectories(candidate3);
+            return candidate3;
+        } catch (Exception e) {
+            Path tmp = Paths.get(System.getProperty("java.io.tmpdir", "/tmp"), "recall-notes");
+            try {
+                Files.createDirectories(tmp);
+                return tmp;
+            } catch (Exception ex) {
+                return userDir;
+            }
         }
     }
 
@@ -176,38 +182,44 @@ public class LocalMarkdownVaultController {
                 ? slugify(req.getCategory()) 
                 : "general";
         String fileSlug = slugify(req.getTitle()) + ".md";
+        String relativePath = category + "/" + fileSlug;
+        String markdown = buildMarkdownContent(req, category);
 
         Path notesDir = getNotesDirectory();
         Path categoryDir = notesDir.resolve(category).normalize();
 
+        boolean diskSaved = false;
+        long sizeBytes = markdown.getBytes(StandardCharsets.UTF_8).length;
+
         try {
             Files.createDirectories(categoryDir);
             Path targetFile = categoryDir.resolve(fileSlug).normalize();
-
-            String markdown = buildMarkdownContent(req, category);
             Files.writeString(targetFile, markdown, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-
-            String relativePath = category + "/" + fileSlug;
+            sizeBytes = Files.size(targetFile);
+            diskSaved = true;
             log.info("Saved local markdown note to disk: {}", targetFile);
-
-            LocalNoteDto noteDto = parseMarkdownFile(markdown, relativePath, fileSlug, category);
-            noteDto.setSizeBytes(Files.size(targetFile));
-            noteDto.setLastModified(Instant.now().toString());
-
-            // 2. Auto-commit to GitHub repository (persists across cloud deploys with 0 database)
-            boolean gitHubCommitted = gitHubSyncService.commitFile(
-                    relativePath, markdown, "docs(vault): add " + req.getTitle().trim()
-            );
-            if (gitHubCommitted) {
-                log.info("Auto-committed note to GitHub repo {}: {}", gitHubSyncService.getRepo(), relativePath);
-            }
-
-            return ResponseEntity.status(HttpStatus.CREATED).body(noteDto);
-        } catch (IOException e) {
-            log.error("Failed to write markdown note file: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Failed to save file: " + e.getMessage()));
+        } catch (Exception diskEx) {
+            log.warn("Local disk write skipped or failed (container ephemeral mode): {}", diskEx.getMessage());
         }
+
+        // 2. Auto-commit to GitHub repository (persists across cloud deploys with 0 database)
+        boolean gitHubCommitted = gitHubSyncService.commitFile(
+                relativePath, markdown, "docs(vault): add " + req.getTitle().trim()
+        );
+        if (gitHubCommitted) {
+            log.info("Auto-committed note to GitHub repo {}: {}", gitHubSyncService.getRepo(), relativePath);
+        }
+
+        if (!diskSaved && !gitHubCommitted) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Failed to save note to local disk and GitHub"));
+        }
+
+        LocalNoteDto noteDto = parseMarkdownFile(markdown, relativePath, fileSlug, category);
+        noteDto.setSizeBytes(sizeBytes);
+        noteDto.setLastModified(Instant.now().toString());
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(noteDto);
     }
 
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -234,19 +246,24 @@ public class LocalMarkdownVaultController {
                     : (fm.containsKey("category") ? slugify(fm.get("category")) : "general");
 
             String baseName = Paths.get(originalName).getFileName().toString();
+            String relPath = category + "/" + baseName;
+
             Path notesDir = getNotesDirectory();
             Path categoryDir = notesDir.resolve(category).normalize();
-            Files.createDirectories(categoryDir);
 
-            Path targetPath = categoryDir.resolve(baseName).normalize();
-            Files.write(targetPath, file.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+            boolean diskSaved = false;
+            long sizeBytes = file.getSize();
 
-            String relPath = category + "/" + baseName;
-            log.info("Uploaded local markdown file: {}", targetPath);
-
-            LocalNoteDto noteDto = parseMarkdownFile(content, relPath, baseName, category);
-            noteDto.setSizeBytes(Files.size(targetPath));
-            noteDto.setLastModified(Instant.now().toString());
+            try {
+                Files.createDirectories(categoryDir);
+                Path targetPath = categoryDir.resolve(baseName).normalize();
+                Files.write(targetPath, file.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+                sizeBytes = Files.size(targetPath);
+                diskSaved = true;
+                log.info("Uploaded local markdown file: {}", targetPath);
+            } catch (Exception diskEx) {
+                log.warn("Local disk upload write skipped/failed: {}", diskEx.getMessage());
+            }
 
             // 2. Auto-commit to GitHub repository
             boolean gitHubCommitted = gitHubSyncService.commitFile(
@@ -256,8 +273,17 @@ public class LocalMarkdownVaultController {
                 log.info("Auto-committed uploaded note to GitHub repo {}: {}", gitHubSyncService.getRepo(), relPath);
             }
 
+            if (!diskSaved && !gitHubCommitted) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body(Map.of("error", "Failed to save uploaded file to local disk and GitHub"));
+            }
+
+            LocalNoteDto noteDto = parseMarkdownFile(content, relPath, baseName, category);
+            noteDto.setSizeBytes(sizeBytes);
+            noteDto.setLastModified(Instant.now().toString());
+
             return ResponseEntity.status(HttpStatus.CREATED).body(noteDto);
-        } catch (IOException e) {
+        } catch (Exception e) {
             log.error("Failed to save uploaded markdown file: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", "Failed to save uploaded file: " + e.getMessage()));
