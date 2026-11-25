@@ -3,7 +3,7 @@ import gsap from 'gsap';
 import { KnowledgeCore3D } from '@/components/canvas3d/KnowledgeCore3D';
 import { ThemeToggle } from '@/components/common/ThemeToggle';
 import { startProductTour } from '@/features/tour/productTour';
-import { CornerDownLeft, HardDrive, Bot, FolderGit2 } from 'lucide-react';
+import { CornerDownLeft, HardDrive, Bot, FolderGit2, Search, Terminal, X } from 'lucide-react';
 
 interface HeroSectionProps {
   onOpenStorageModal?: () => void;
@@ -11,6 +11,9 @@ interface HeroSectionProps {
   onOpenJobRadar?: () => void;
   onOpenMarkdownVault?: () => void;
   onStartTour?: () => void;
+  searchQuery?: string;
+  onSearchChange?: (val: string) => void;
+  onQuickTopicSelect?: (topic: string) => void;
 }
 
 export const HeroSection: React.FC<HeroSectionProps> = ({
@@ -19,11 +22,35 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   onOpenJobRadar,
   onOpenMarkdownVault,
   onStartTour,
+  searchQuery,
+  onSearchChange,
+  onQuickTopicSelect,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const headlineRef = useRef<HTMLHeadingElement>(null);
   const inputRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const [queryInput, setQueryInput] = useState('');
+
+  // Handle Ctrl+K / Cmd+K keyboard shortcut to focus search
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  const handleSearchSubmit = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const target = document.getElementById('knowledge-base');
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   useEffect(() => {
     const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
@@ -149,33 +176,104 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             your notes, anywhere you go.
           </h1>
 
-          {/* Koval-Style Search / Command Input Bar */}
+          {/* Developer Command & Search Bar */}
           <div ref={inputRef} data-tour="search-input" className="mt-12 max-w-2xl">
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-0 border-b-2 border-ink pb-2">
-              <div className="flex items-center">
-                <span className="tech-pill-black text-xs px-2.5 py-1.5 mr-2">
-                  https://
+            <form onSubmit={handleSearchSubmit} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 border-2 border-ink bg-ground p-1.5 shadow-brutalist">
+              <div className="flex items-center flex-1 px-2 gap-2">
+                <span className="font-mono text-xs font-bold text-ink flex items-center gap-1.5 bg-ink text-ground px-2 py-1 select-none">
+                  <Terminal className="w-3.5 h-3.5" />
+                  <span>recall&gt;</span>
                 </span>
                 <input
+                  ref={searchInputRef}
                   type="text"
-                  placeholder="search a topic, code snippet, or concept..."
-                  value={queryInput}
-                  onChange={(e) => setQueryInput(e.target.value)}
-                  className="bg-transparent font-mono text-sm sm:text-base text-ink placeholder:text-ink-quiet focus:outline-none w-full sm:w-[340px] py-1"
+                  placeholder="search concepts, algorithms, code snippets..."
+                  value={searchQuery !== undefined ? searchQuery : queryInput}
+                  onChange={(e) => {
+                    setQueryInput(e.target.value);
+                    if (onSearchChange) onSearchChange(e.target.value);
+                  }}
+                  className="bg-transparent font-mono text-sm text-ink placeholder:text-ink-quiet focus:outline-none w-full py-1"
                 />
+                {(searchQuery || queryInput) && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setQueryInput('');
+                      if (onSearchChange) onSearchChange('');
+                    }}
+                    className="text-ink-quiet hover:text-ink p-1 cursor-pointer"
+                    title="Clear search"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
               </div>
 
-              <div className="sm:ml-auto mt-3 sm:mt-0 flex items-center gap-2">
-                <button className="flex items-center justify-center gap-2 bg-ink text-ground hover:bg-neutral-800 font-sans font-semibold text-xs px-5 py-2.5 transition-all">
-                  <span>Find note ↵</span>
-                  <CornerDownLeft className="w-3.5 h-3.5 text-ground" />
+              <div className="flex items-center gap-1.5 justify-end">
+                <kbd className="hidden sm:inline-flex items-center gap-0.5 font-mono text-[10px] text-ink-quiet border border-ink-hairline px-1.5 py-1 select-none">
+                  <span>⌘K</span>
+                </kbd>
+                <button
+                  type="submit"
+                  className="flex items-center justify-center gap-1.5 bg-ink text-ground hover:bg-neutral-800 font-mono font-semibold text-xs px-4 py-2 transition-all border border-ink cursor-pointer"
+                >
+                  <Search className="w-3.5 h-3.5" />
+                  <span>Search</span>
+                  <CornerDownLeft className="w-3 h-3 opacity-70" />
                 </button>
               </div>
+            </form>
+
+            {/* Quick-Recall Interactive Pill Matrix */}
+            <div className="mt-3.5 flex flex-wrap items-center gap-1.5">
+              <span className="font-mono text-[10px] uppercase font-bold text-ink-quiet mr-1">Quick Recall:</span>
+              {[
+                { label: 'Virtual Threads', query: 'Virtual Threads' },
+                { label: 'React 18 Fiber', query: 'Fiber' },
+                { label: 'Token Bucket', query: 'Token Bucket' },
+                { label: 'Spring @Transactional', query: 'Transactional' },
+              ].map((pill) => (
+                <button
+                  key={pill.label}
+                  type="button"
+                  onClick={() => {
+                    setQueryInput(pill.query);
+                    if (onSearchChange) onSearchChange(pill.query);
+                    if (onQuickTopicSelect) onQuickTopicSelect(pill.query);
+                  }}
+                  className="tech-pill hover:bg-ink hover:text-ground text-[10px] cursor-pointer flex items-center gap-1 transition-colors"
+                >
+                  <span className="text-yellow-500 text-[10px]">⚡</span>
+                  <span>{pill.label}</span>
+                </button>
+              ))}
+
+              {onOpenAiTutor && (
+                <button
+                  type="button"
+                  onClick={onOpenAiTutor}
+                  className="tech-pill-black hover:bg-neutral-800 text-[10px] cursor-pointer flex items-center gap-1 text-ground transition-colors"
+                  title="Ask AI Assistant about this query"
+                >
+                  <Bot className="w-3 h-3 text-ground" />
+                  <span>Ask AI</span>
+                </button>
+              )}
             </div>
 
-            <p className="mt-2.5 font-mono text-[11px] text-ink-quiet">
-              Friendly reminder: cloud storage costs money behind the scenes, so save the good stuff—your future self will thank you.
-            </p>
+            {/* Architecture Telemetry Badges */}
+            <div className="mt-3 flex flex-wrap items-center gap-3 font-mono text-[10px] text-ink-quiet">
+              <div className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                <span>NEON ZERO-SCALE: <strong className="text-ink">0.00 CU-hrs</strong></span>
+              </div>
+              <span className="text-ink-hairline">|</span>
+              <div className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                <span>GITOPS VAULT: <strong className="text-ink">ZERO-DB ACTIVE</strong></span>
+              </div>
+            </div>
           </div>
         </div>
 

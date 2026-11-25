@@ -367,6 +367,15 @@ export const App: React.FC = () => {
           onOpenAiTutor={() => setIsAiDrawerOpen(true)}
           onOpenJobRadar={() => setIsJobRadarOpen(true)}
           onOpenMarkdownVault={() => setIsMarkdownVaultOpen(true)}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          onQuickTopicSelect={(query) => {
+            setSearchQuery(query);
+            const target = document.getElementById('knowledge-base');
+            if (target) {
+              target.scrollIntoView({ behavior: 'smooth' });
+            }
+          }}
         />
 
         {/* Knowledge Console Section */}
