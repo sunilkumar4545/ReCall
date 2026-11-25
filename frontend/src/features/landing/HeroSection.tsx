@@ -59,9 +59,6 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             <span>/ how-it-works</span>
             <span className="text-[9px] px-1 bg-ink text-ground rounded-xs font-mono font-bold">tour</span>
           </button>
-          <a href="#vector-rag" className="tech-pill">
-            / rulebooks
-          </a>
           <a href="#knowledge-base" className="tech-pill">
             / blog
           </a>

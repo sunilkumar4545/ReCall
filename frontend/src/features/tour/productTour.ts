@@ -82,7 +82,7 @@ const tourSteps: DriveStep[] = [
     element: '[data-tour="categories"]',
     popover: {
       title: '09 // DOMAIN WORKSPACES',
-      description: 'Organize notes by language or concept (Java, React, System Design). Click "+ new category" to create custom rulebooks anytime.',
+      description: 'Organize notes by language or concept (Java, React, System Design). Click "+ new category" to create custom categories anytime.',
       side: 'top',
       align: 'start',
     },
