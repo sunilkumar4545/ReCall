@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { KnowledgeCore3D } from '@/components/canvas3d/KnowledgeCore3D';
 import { ThemeToggle } from '@/components/common/ThemeToggle';
+import { startProductTour } from '@/features/tour/productTour';
 import { CornerDownLeft, HardDrive, Bot, FolderGit2 } from 'lucide-react';
 
 interface HeroSectionProps {
@@ -9,6 +10,7 @@ interface HeroSectionProps {
   onOpenAiTutor?: () => void;
   onOpenJobRadar?: () => void;
   onOpenMarkdownVault?: () => void;
+  onStartTour?: () => void;
 }
 
 export const HeroSection: React.FC<HeroSectionProps> = ({
@@ -16,6 +18,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   onOpenAiTutor,
   onOpenJobRadar,
   onOpenMarkdownVault,
+  onStartTour,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const headlineRef = useRef<HTMLHeadingElement>(null);
@@ -46,10 +49,16 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
       <header className="flex flex-wrap items-center justify-between gap-4 pb-8 pt-2 border-b border-ink-hairline">
         {/* Left Navigation Pills */}
         <div className="flex flex-wrap items-center gap-1.5 font-mono text-[11px]">
-          <span className="tech-pill-black">recall.sunil4224</span>
-          <a href="#how-it-works" className="tech-pill">
-            / how-it-works
-          </a>
+          <span className="tech-pill-black" data-tour="brand">recall.sunil4224</span>
+          <button
+            onClick={onStartTour || startProductTour}
+            className="tech-pill hover:bg-ink hover:text-ground cursor-pointer flex items-center gap-1 transition-colors"
+            data-tour="how-it-works"
+            title="Take an interactive tour of ReCall AI features"
+          >
+            <span>/ how-it-works</span>
+            <span className="text-[9px] px-1 bg-ink text-ground rounded-xs font-mono font-bold">tour</span>
+          </button>
           <a href="#vector-rag" className="tech-pill">
             / rulebooks
           </a>
@@ -58,6 +67,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           </a>
           <button
             onClick={onOpenJobRadar}
+            data-tour="job-radar"
             className="tech-pill flex items-center gap-1 font-semibold hover:bg-ink hover:text-ground cursor-pointer"
           >
             <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
@@ -65,6 +75,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           </button>
           <button
             onClick={onOpenMarkdownVault}
+            data-tour="markdown-vault"
             className="tech-pill flex items-center gap-1 font-semibold hover:bg-ink hover:text-ground cursor-pointer"
             title="Local Git-Backed Markdown Vault (Zero-DB / 0 CU-hrs)"
           >
@@ -84,6 +95,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             {onOpenStorageModal && (
               <button
                 onClick={onOpenStorageModal}
+                data-tour="storage"
                 className="tech-pill hover:bg-ink hover:text-ground flex items-center gap-1 font-semibold"
                 title="View live Neon DB & Backblaze B2 storage capacity"
               >
@@ -96,6 +108,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             {onOpenAiTutor && (
               <button
                 onClick={onOpenAiTutor}
+                data-tour="ai-tutor"
                 className="tech-pill-black hover:bg-neutral-800 flex items-center gap-1 font-semibold text-[11px]"
                 title="Open AI Tutor & Interview Mentor (Ctrl+J)"
               >
@@ -140,7 +153,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           </h1>
 
           {/* Koval-Style Search / Command Input Bar */}
-          <div ref={inputRef} className="mt-12 max-w-2xl">
+          <div ref={inputRef} data-tour="search-input" className="mt-12 max-w-2xl">
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-0 border-b-2 border-ink pb-2">
               <div className="flex items-center">
                 <span className="tech-pill-black text-xs px-2.5 py-1.5 mr-2">
@@ -175,7 +188,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             Built for people who like keeping notes digitally—save your title, explanation, code, YouTube links, and PDFs in one place and pull them up anytime.
           </p>
 
-          <div className="mt-4">
+          <div className="mt-4" data-tour="knowledge-core">
             <KnowledgeCore3D />
           </div>
         </div>

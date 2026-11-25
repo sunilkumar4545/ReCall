@@ -13,6 +13,7 @@
     "@react-three/fiber": "^8.17.8",
     "@types/prismjs": "^1.26.6",
     "axios": "^1.7.7",
+    "driver.js": "^1.14.0",
     "framer-motion": "^11.5.4",
     "gsap": "^3.12.5",
     "lenis": "^1.1.14",

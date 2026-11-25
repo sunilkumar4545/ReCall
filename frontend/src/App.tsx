@@ -12,6 +12,7 @@ import { StorageTelemetrySection } from './features/telemetry/StorageTelemetrySe
 import { JobRadarSection } from './features/jobRadar/JobRadarSection';
 import { JobRadarWorkspace } from './features/jobRadar/JobRadarWorkspace';
 import { GitMarkdownVault } from './features/markdownVault/GitMarkdownVault';
+import { startProductTour } from './features/tour/productTour';
 import { Category, RecallEntry, TopicContent } from './types';
 import { api, ApiRecallEntry } from './services/api';
 import { Search, Plus, ArrowUpRight, Hash, X, BookOpen, HardDrive, Bot, FolderGit2 } from 'lucide-react';
@@ -105,6 +106,21 @@ export const App: React.FC = () => {
   useEffect(() => {
     loadData();
   }, [loadData]);
+
+  // Launch interactive product tour for first-time visitors
+  useEffect(() => {
+    try {
+      const seen = localStorage.getItem('recall_tour_seen');
+      if (!seen) {
+        const timer = setTimeout(() => {
+          startProductTour();
+        }, 1500);
+        return () => clearTimeout(timer);
+      }
+    } catch (e) {
+      // ignore
+    }
+  }, []);
 
   // Filter entries in the main index
   const filteredEntries = entries.filter((entry) => {
@@ -369,7 +385,7 @@ export const App: React.FC = () => {
             {/* Action Bar: Search + Workspace Shortcut + New Entry */}
             <div className="flex flex-wrap items-center gap-3">
               {/* Search Bar */}
-              <div className="flex items-center border border-ink bg-ground px-3 py-1.5 w-full sm:w-60">
+              <div data-tour="search-bar" className="flex items-center border border-ink bg-ground px-3 py-1.5 w-full sm:w-60">
                 <Search className="w-3.5 h-3.5 text-ink mr-2" />
                 <input
                   type="text"
@@ -415,6 +431,7 @@ export const App: React.FC = () => {
 
               {/* Add New Entry Button */}
               <button
+                data-tour="new-entry"
                 onClick={() => setIsNewEntryOpen(true)}
                 className="bg-ink text-ground px-4 py-2 font-mono text-xs font-semibold hover:bg-neutral-800 transition-colors border border-ink flex items-center gap-1.5"
               >
@@ -435,7 +452,7 @@ export const App: React.FC = () => {
           )}
 
           {/* Dynamic Technical Filter Pills */}
-          <div className="flex flex-wrap items-center gap-2 mb-10 pb-4 border-b border-ink-hairline">
+          <div data-tour="categories" className="flex flex-wrap items-center gap-2 mb-10 pb-4 border-b border-ink-hairline">
             {categories.map((cat) => {
               const isActive = activeTab === cat.slug;
               const count = categoryTopicCounts[cat.slug] || 0;
