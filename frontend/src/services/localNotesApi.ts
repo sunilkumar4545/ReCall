@@ -36,10 +36,12 @@ export const localNotesApi = {
     try {
       const res = await axios.get(API_BASE_URL, { timeout: 3000 });
       if (res.data && Array.isArray(res.data.notes)) {
+        const fetchedNotes = res.data.notes;
+        const finalNotes = fetchedNotes.length > 0 ? fetchedNotes : loadBundledNotes();
         return {
-          notes: res.data.notes,
+          notes: finalNotes,
           gitHubSyncEnabled: Boolean(res.data.gitHubSyncEnabled),
-          gitHubRepo: res.data.gitHubRepo || 'sunil4224/recall',
+          gitHubRepo: res.data.gitHubRepo || 'sunilkumar4545/ReCall',
           gitHubBranch: res.data.gitHubBranch || 'main',
         };
       }
@@ -50,7 +52,7 @@ export const localNotesApi = {
     return {
       notes: loadBundledNotes(),
       gitHubSyncEnabled: false,
-      gitHubRepo: 'sunil4224/recall',
+      gitHubRepo: 'sunilkumar4545/ReCall',
       gitHubBranch: 'main',
     };
   },
